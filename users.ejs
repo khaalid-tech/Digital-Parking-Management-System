@@ -1,0 +1,287 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>User Management - Digital Parking Management System</title>
+
+    <!-- Bootstrap 5 CSS -->
+    <link
+      href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css"
+      rel="stylesheet" />
+    <!-- Bootstrap Icons -->
+    <link
+      href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css"
+      rel="stylesheet" />
+    <!-- Custom CSS -->
+    <link href="/css/style.css" rel="stylesheet" />
+
+    <!-- Favicon -->
+    <link rel="icon" type="image/x-icon" href="/favicon.ico" />
+  </head>
+  <body>
+    <!-- Navigation -->
+    <nav class="navbar navbar-expand-lg navbar-dark bg-primary">
+      <div class="container-fluid">
+        <a class="navbar-brand" href="/">
+          <i class="bi bi-p-square-fill me-2"></i>
+          Digital Parking System
+        </a>
+
+        <button
+          class="navbar-toggler"
+          type="button"
+          data-bs-toggle="collapse"
+          data-bs-target="#navbarNav">
+          <span class="navbar-toggler-icon"></span>
+        </button>
+
+        <div class="collapse navbar-collapse" id="navbarNav">
+          <ul class="navbar-nav me-auto">
+            <li class="nav-item">
+              <a class="nav-link" href="/admin/dashboard">
+                <i class="bi bi-speedometer2 me-1"></i>Dashboard
+              </a>
+            </li>
+            <li class="nav-item">
+              <a class="nav-link active" href="/admin/users">
+                <i class="bi bi-people me-1"></i>Users
+              </a>
+            </li>
+            <li class="nav-item">
+              <a class="nav-link" href="/admin/slots">
+                <i class="bi bi-p-square me-1"></i>Parking Slots
+              </a>
+            </li>
+            <li class="nav-item">
+              <a class="nav-link" href="/admin/reports">
+                <i class="bi bi-graph-up me-1"></i>Reports
+              </a>
+            </li>
+          </ul>
+
+          <ul class="navbar-nav">
+            <li class="nav-item dropdown">
+              <a
+                class="nav-link dropdown-toggle"
+                href="#"
+                role="button"
+                data-bs-toggle="dropdown">
+                <i class="bi bi-person-circle me-1"></i><%= user.full_name %>
+              </a>
+              <ul class="dropdown-menu dropdown-menu-end">
+                <li>
+                  <a class="dropdown-item" href="/auth/change-password">
+                    <i class="bi bi-key me-2"></i>Change Password
+                  </a>
+                </li>
+                <li><hr class="dropdown-divider" /></li>
+                <li>
+                  <a class="dropdown-item" href="/auth/logout">
+                    <i class="bi bi-box-arrow-right me-2"></i>Logout
+                  </a>
+                </li>
+              </ul>
+            </li>
+          </ul>
+        </div>
+      </div>
+    </nav>
+
+    <!-- Main Content -->
+    <main class="container-fluid py-4">
+      <!-- Page Header -->
+      <div class="page-header bg-light py-4 mb-4">
+        <div class="container">
+          <div class="row align-items-center">
+            <div class="col-md-8">
+              <h1 class="h2 mb-2 text-dark">User Management</h1>
+              <p class="text-secondary mb-0">Manage system users and their roles</p>
+            </div>
+            <div class="col-md-4 text-md-end">
+              <a href="/admin/users/add" class="btn btn-primary">
+                <i class="bi bi-person-plus me-2"></i>Add New User
+              </a>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Flash Messages -->
+      <% if (typeof success !== 'undefined' && success) { %>
+      <div class="alert alert-success alert-dismissible fade show" role="alert">
+        <i class="bi bi-check-circle me-2"></i><%= success %>
+        <button
+          type="button"
+          class="btn-close"
+          data-bs-dismiss="alert"></button>
+      </div>
+      <% } %>
+
+      <% if (typeof error !== 'undefined' && error) { %>
+      <div class="alert alert-danger alert-dismissible fade show" role="alert">
+        <i class="bi bi-exclamation-triangle me-2"></i><%= error %>
+        <button
+          type="button"
+          class="btn-close"
+          data-bs-dismiss="alert"></button>
+      </div>
+      <% } %>
+
+      <!-- Users Table -->
+      <div class="card border-0 shadow-sm">
+        <div class="card-header bg-primary text-white">
+          <h5 class="mb-0">
+            <i class="bi bi-people me-2"></i>System Users
+          </h5>
+        </div>
+        <div class="card-body">
+          <% if (users && users.length > 0) { %>
+          <div class="table-responsive">
+            <table class="table table-hover">
+              <thead>
+                <tr>
+                  <th class="text-dark">Name</th>
+                  <th class="text-dark">Username</th>
+                  <th class="text-dark">Role</th>
+                  <th class="text-dark">Status</th>
+                  <th class="text-dark">Created</th>
+                  <th class="text-dark">Actions</th>
+                </tr>
+              </thead>
+              <tbody>
+                <% users.forEach(function(user) { %>
+                <tr>
+                  <td class="text-dark">
+                    <div class="d-flex align-items-center">
+                      <div class="bg-primary bg-gradient text-white rounded-circle d-flex align-items-center justify-content-center me-3" style="width: 40px; height: 40px;">
+                        <i class="bi bi-person"></i>
+                      </div>
+                      <div>
+                        <strong class="text-dark"><%= user.full_name %></strong><br>
+                        <small class="text-secondary"><%= user.email %></small>
+                      </div>
+                    </div>
+                  </td>
+                  <td class="text-dark">
+                    <span class="badge bg-secondary text-white"><%= user.username %></span>
+                  </td>
+                  <td>
+                    <span class="badge <%- getComplexStatus(user.role === 'admin', 'bg-danger', user.role === 'cashier', 'bg-success', 'bg-info') %> text-white">
+                      <%= user.role.charAt(0).toUpperCase() + user.role.slice(1) %>
+                    </span>
+                  </td>
+                  <td>
+                    <span class="badge <%- getComplexStatus(user.is_active, 'bg-success', 'bg-warning') %> text-white">
+                      <%= user.is_active ? 'Active' : 'Inactive' %>
+                    </span>
+                  </td>
+                  <td class="text-dark">
+                    <small class="text-secondary">
+                      <%= moment(user.created_at).format('MMM DD, YYYY') %>
+                    </small>
+                  </td>
+                  <td>
+                    <div class="btn-group" role="group">
+                      <a href="/admin/users/edit/<%= user.id %>" class="btn btn-sm btn-outline-primary">
+                        <i class="bi bi-pencil me-1"></i>Edit
+                      </a>
+                      <% if (user.id !== currentUser.id) { %>
+                      <button type="button" class="btn btn-sm btn-outline-danger" onclick="deleteUser(<%= user.id %>, '<%= user.full_name %>')">
+                        <i class="bi bi-trash me-1"></i>Delete
+                      </button>
+                      <% } %>
+                    </div>
+                  </td>
+                </tr>
+                <% }); %>
+              </tbody>
+            </table>
+          </div>
+          <% } else { %>
+          <div class="text-center text-secondary py-4">
+            <i class="bi bi-people fs-1 mb-3"></i>
+            <p class="text-dark">No users found</p>
+            <a href="/admin/users/add" class="btn btn-primary">
+              <i class="bi bi-person-plus me-2"></i>Add First User
+            </a>
+          </div>
+          <% } %>
+        </div>
+      </div>
+    </main>
+
+    <!-- Delete Confirmation Modal -->
+    <div class="modal fade" id="deleteUserModal" tabindex="-1">
+      <div class="modal-dialog">
+        <div class="modal-content">
+          <div class="modal-header bg-danger text-white">
+            <h5 class="modal-title">
+              <i class="bi bi-exclamation-triangle me-2"></i>Confirm Delete
+            </h5>
+            <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+          </div>
+          <div class="modal-body">
+            <p class="text-dark">Are you sure you want to delete user <strong id="deleteUserName"></strong>?</p>
+            <p class="text-secondary">This action cannot be undone.</p>
+            <div class="alert alert-warning mt-3">
+              <i class="bi bi-exclamation-triangle me-2"></i>
+              <strong>Warning:</strong> If this user has associated records (parking tickets, payments, shifts, or audit logs), 
+              you may need to use "Force Delete" to remove all associated data.
+            </div>
+          </div>
+          <div class="modal-footer">
+            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+            <form id="deleteUserForm" method="POST" style="display: inline;">
+              <button type="submit" class="btn btn-danger me-2">Delete User</button>
+              <button type="submit" class="btn btn-warning" onclick="forceDelete()">Force Delete</button>
+            </form>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Footer -->
+    <footer class="bg-light text-center text-secondary py-3 mt-5">
+      <div class="container">
+        <small
+          >&copy; 2024 Digital Parking Management System. All rights
+          reserved.</small
+        >
+      </div>
+    </footer>
+
+    <!-- Bootstrap 5 JS Bundle -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+    <!-- jQuery (for AJAX) -->
+    <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
+    <!-- Custom JS -->
+    <script src="/js/main.js"></script>
+
+    <script>
+      function deleteUser(userId, userName) {
+        document.getElementById('deleteUserName').textContent = userName;
+        document.getElementById('deleteUserForm').action = `/admin/users/delete/${userId}`;
+        
+        // Reset force delete flag
+        document.getElementById('deleteUserForm').force_delete = false;
+        
+        const modal = new bootstrap.Modal(document.getElementById('deleteUserModal'));
+        modal.show();
+      }
+      
+      function forceDelete() {
+        // Add hidden input for force delete
+        let form = document.getElementById('deleteUserForm');
+        let forceDeleteInput = document.createElement('input');
+        forceDeleteInput.type = 'hidden';
+        forceDeleteInput.name = 'force_delete';
+        forceDeleteInput.value = 'true';
+        form.appendChild(forceDeleteInput);
+        
+        // Submit the form
+        form.submit();
+      }
+    </script>
+  </body>
+</html>

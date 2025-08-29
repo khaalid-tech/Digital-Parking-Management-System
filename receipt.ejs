@@ -1,0 +1,848 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Payment Receipt - Digital Parking Management System</title>
+
+    <!-- Bootstrap 5 CSS -->
+    <link
+      href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css"
+      rel="stylesheet" />
+    <!-- Bootstrap Icons -->
+    <link
+      href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css"
+      rel="stylesheet" />
+    <!-- Custom CSS -->
+    <link href="/css/style.css" rel="stylesheet" />
+    <!-- Favicon -->
+    <link rel="icon" type="image/x-icon" href="/favicon.ico" />
+  </head>
+  <body>
+    <!-- Navigation -->
+    <nav class="navbar navbar-expand-lg navbar-dark bg-primary">
+      <div class="container-fluid">
+        <a class="navbar-brand" href="/">
+          <i class="bi bi-p-square-fill me-2"></i>
+          Digital Parking System
+        </a>
+
+        <button
+          class="navbar-toggler"
+          type="button"
+          data-bs-toggle="collapse"
+          data-bs-target="#navbarNav">
+          <span class="navbar-toggler-icon"></span>
+        </button>
+
+        <div class="collapse navbar-collapse" id="navbarNav">
+          <ul class="navbar-nav me-auto">
+            <li class="nav-item">
+              <a class="nav-link" href="/cashier/dashboard">
+                <i class="bi bi-speedometer2 me-1"></i>Dashboard
+              </a>
+            </li>
+            <li class="nav-item">
+              <a class="nav-link" href="/cashier/check-in">
+                <i class="bi bi-plus-circle me-1"></i>Check-In
+              </a>
+            </li>
+            <li class="nav-item">
+              <a class="nav-link" href="/cashier/check-out">
+                <i class="bi bi-dash-circle me-1"></i>Check-Out
+              </a>
+            </li>
+            <li class="nav-item">
+              <a class="nav-link" href="/cashier/shift/open">
+                <i class="bi bi-play-circle me-1"></i>Open Shift
+              </a>
+            </li>
+          </ul>
+
+          <ul class="navbar-nav">
+            <li class="nav-item dropdown">
+              <a
+                class="nav-link dropdown-toggle"
+                href="#"
+                role="button"
+                data-bs-toggle="dropdown">
+                <i class="bi bi-person-circle me-1"></i><%= user ? user.full_name : 'Cashier' %>
+              </a>
+              <ul class="dropdown-menu dropdown-menu-end">
+                <li>
+                  <a class="dropdown-item" href="/auth/change-password">
+                    <i class="bi bi-key me-2"></i>Change Password
+                  </a>
+                </li>
+                <li><hr class="dropdown-divider" /></li>
+                <li>
+                  <a class="dropdown-item" href="/auth/logout">
+                    <i class="bi bi-box-arrow-right me-2"></i>Logout
+                  </a>
+                </li>
+              </ul>
+            </li>
+          </ul>
+        </div>
+      </div>
+    </nav>
+
+    <!-- Main Content -->
+    <main class="container-fluid py-4">
+      <!-- Page Header -->
+      <div class="page-header bg-light py-4 mb-4">
+        <div class="container">
+          <div class="row align-items-center">
+            <div class="col-md-8">
+              <h1 class="h2 mb-2">Payment Receipt</h1>
+              <p class="text-muted mb-0">
+                Vehicle check-out completed successfully
+              </p>
+            </div>
+            <div class="col-md-4 text-md-end">
+              <a href="/cashier/dashboard" class="btn btn-outline-secondary">
+                <i class="bi bi-arrow-left me-2"></i>Back to Dashboard
+              </a>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Flash Messages -->
+      <% if (typeof error !== 'undefined' && error) { %>
+      <div class="alert alert-danger alert-dismissible fade show" role="alert">
+        <i class="bi bi-exclamation-triangle me-2"></i><%= error %>
+        <button
+          type="button"
+          class="btn-close"
+          data-bs-dismiss="alert"></button>
+      </div>
+      <% } %>
+      
+      <% if (typeof success !== 'undefined' && success) { %>
+      <div class="alert alert-success alert-dismissible fade show" role="alert">
+        <i class="bi bi-check-circle me-2"></i><%= success %>
+        <button
+          type="button"
+          class="btn-close"
+          data-bs-dismiss="alert"></button>
+      </div>
+      <% } %>
+
+      <!-- Receipt Card -->
+      <div class="row justify-content-center">
+        <div class="col-md-8 col-lg-6">
+          <div class="card border-0 shadow-sm">
+            <div class="card-header bg-success text-white text-center">
+              <h4 class="mb-0">
+                <i class="bi bi-check-circle me-2"></i>
+                Payment Successful
+              </h4>
+            </div>
+            <div class="card-body p-4">
+              <!-- Receipt Header -->
+              <div class="text-center mb-4">
+                <h5 class="text-primary">Digital Parking Management System</h5>
+                <p class="text-muted mb-0">Official Payment Receipt</p>
+              </div>
+
+              <!-- Receipt Details -->
+              <div class="row mb-3">
+                <div class="col-6">
+                  <strong>Receipt #:</strong><br />
+                  <span class="text-primary"><%= receipt.receipt_number %></span>
+                </div>
+                <div class="col-6 text-end">
+                  <strong>Date:</strong><br />
+                  <span><%= moment(receipt.payment_date).format('MMM DD, YYYY HH:mm') %></span>
+                </div>
+              </div>
+
+              <hr />
+
+              <!-- Vehicle Information -->
+              <div class="mb-3">
+                <h6 class="text-primary">Vehicle Information</h6>
+                <div class="row">
+                  <div class="col-6">
+                    <strong>License Plate:</strong><br />
+                    <span class="badge bg-primary"><%= receipt.license_plate %></span>
+                  </div>
+                  <div class="col-6">
+                    <strong>Make/Model:</strong><br />
+                    <%= receipt.make %> <%= receipt.model %>
+                  </div>
+                </div>
+                <div class="row mt-2">
+                  <div class="col-6">
+                    <strong>Color:</strong><br />
+                    <%= receipt.color %>
+                  </div>
+                  <div class="col-6">
+                    <strong>Driver:</strong><br />
+                    <%= receipt.driver_name %>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Parking Details -->
+              <div class="mb-3">
+                <h6 class="text-primary">Parking Details</h6>
+                <div class="row">
+                  <div class="col-6">
+                    <strong>Slot:</strong><br />
+                    <span class="badge bg-info"><%= receipt.slot_number %></span>
+                  </div>
+                  <div class="col-6">
+                    <strong>Check-In:</strong><br />
+                    <%= moment(receipt.check_in_time).format('MMM DD, YYYY HH:mm') %>
+                  </div>
+                </div>
+                <div class="row mt-2">
+                  <div class="col-6">
+                    <strong>Check-Out:</strong><br />
+                    <%= moment(receipt.check_out_time).format('MMM DD, YYYY HH:mm') %>
+                  </div>
+                  <div class="col-6">
+                    <strong>Duration:</strong><br />
+                    <span class="badge bg-secondary"><%= receipt.duration_hours %> hour(s)</span>
+                  </div>
+                </div>
+              </div>
+
+              <hr />
+
+              <!-- Payment Details -->
+              <div class="mb-3">
+                <h6 class="text-primary">Payment Details</h6>
+                <div class="row">
+                  <div class="col-6">
+                    <strong>Payment Method:</strong><br />
+                    <span class="badge bg-success"><%= receipt.payment_method %></span>
+                  </div>
+                  <div class="col-6">
+                    <strong>Reference:</strong><br />
+                    <%= receipt.reference_number || 'N/A' %>
+                  </div>
+                </div>
+                <div class="row mt-2">
+                  <div class="col-6">
+                    <strong>Cashier:</strong><br />
+                    <%= receipt.cashier_name %>
+                  </div>
+                  <div class="col-6">
+                    <strong>Total Amount:</strong><br />
+                    <span class="h5 text-success mb-0">$<%= receipt.amount.toFixed(2) %></span>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Notes -->
+              <% if (receipt.notes) { %>
+              <div class="mb-3">
+                <h6 class="text-primary">Notes</h6>
+                <p class="mb-0"><%= receipt.notes %></p>
+              </div>
+              <% } %>
+
+              <hr />
+
+              <!-- Action Buttons -->
+              <div class="d-grid gap-2 d-md-flex justify-content-md-center">
+                <button id="downloadPdfBtn" class="btn btn-primary me-md-2">
+                  <i class="bi bi-file-earmark-pdf me-2"></i>Download PDF Receipt
+                </button>
+                <button id="printReceiptBtn" class="btn btn-info me-md-2">
+                  <i class="bi bi-printer me-2"></i>Print Receipt
+                </button>
+                <a href="/cashier/check-out" class="btn btn-outline-secondary me-md-2">
+                  <i class="bi bi-dash-circle me-2"></i>Process Another
+                </a>
+                <a href="/cashier/dashboard" class="btn btn-outline-success">
+                  <i class="bi bi-speedometer2 me-2"></i>Dashboard
+                </a>
+              </div>
+
+              <!-- PDF Notice -->
+              <div class="text-center mt-3">
+                <small class="text-muted">
+                  <i class="bi bi-info-circle me-1"></i>
+                  Click "Download PDF Receipt" to save a digital copy or "Print Receipt" to print directly. You can also use Ctrl+Shift+P as a shortcut.
+                </small>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </main>
+
+    <!-- Footer -->
+    <footer class="bg-light text-center text-muted py-3 mt-5">
+      <div class="container">
+        <small>&copy; 2024 Digital Parking Management System. All rights reserved.</small>
+      </div>
+    </footer>
+
+    <!-- Bootstrap 5 JS Bundle -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+    <!-- jQuery (for AJAX) -->
+    <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
+    <!-- Moment.js for date formatting -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.29.4/moment.min.js"></script>
+    <!-- jsPDF for PDF generation -->
+    <script src="https://unpkg.com/jspdf@latest/dist/jspdf.umd.min.js"></script>
+    <!-- Custom JS -->
+    <script src="/js/main.js"></script>
+
+    <!-- PDF Generation Functionality -->
+    <script>
+      function generatePDFReceipt() {
+        try {
+          console.log("PDF generation started");
+
+          // Get receipt data from database
+          const receiptData = {
+            receiptNumber: "<%= receipt.receipt_number %>",
+            paymentDate: '<%= moment(receipt.payment_date).format("MMM DD, YYYY HH:mm") %>',
+            licensePlate: "<%= receipt.license_plate %>",
+            make: "<%= receipt.make %>",
+            model: "<%= receipt.model %>",
+            color: "<%= receipt.color %>",
+            driverName: "<%= receipt.driver_name %>",
+            slotNumber: "<%= receipt.slot_number %>",
+            checkInTime: '<%= moment(receipt.check_in_time).format("MMM DD, YYYY HH:mm") %>',
+            checkOutTime: '<%= moment(receipt.check_out_time).format("MMM DD, YYYY HH:mm") %>',
+            durationHours: "<%= receipt.duration_hours %>",
+            paymentMethod: "<%= receipt.payment_method %>",
+            referenceNumber: '<%= receipt.reference_number || "N/A" %>',
+            cashierName: "<%= receipt.cashier_name %>",
+            amount: "<%= receipt.amount.toFixed(2) %>",
+            ticketNumber: "<%= receipt.ticket_number %>",
+            slotName: "<%= receipt.slot_name %>",
+            notes: "<%= receipt.notes || 'N/A' %>"
+          };
+
+          console.log("Receipt data from database:", receiptData);
+
+          // Check if jsPDF is available
+          if (typeof window.jspdf === "undefined" && typeof window.jsPDF === "undefined") {
+            console.error("jsPDF library not loaded, using text fallback");
+            createTextReceipt(receiptData);
+            return;
+          }
+
+          // Create PDF document
+          let doc;
+          try {
+            if (window.jspdf && window.jspdf.jsPDF) {
+              doc = new window.jspdf.jsPDF();
+            } else if (window.jsPDF) {
+              doc = new window.jsPDF();
+            } else {
+              throw new Error("jsPDF not available");
+            }
+          } catch (pdfError) {
+            console.error("PDF creation error:", pdfError);
+            createTextReceipt(receiptData);
+            return;
+          }
+
+          // Set document properties
+          doc.setProperties({
+            title: "Parking Receipt - " + receiptData.receiptNumber,
+            subject: "Digital Parking Management System Receipt",
+            author: "Digital Parking System",
+            creator: "Digital Parking System",
+            keywords: "parking, receipt, payment, vehicle",
+            producer: "Digital Parking Management System"
+          });
+
+          // Helper function to safely set text with font fallback
+          function safeText(text, x, y, options = {}) {
+            try {
+              // Try with helvetica first
+              doc.setFont('helvetica', options.fontWeight || 'normal');
+              doc.text(text, x, y, options);
+            } catch (fontError) {
+              console.warn("Font error, using default:", fontError);
+              try {
+                // Fallback to default font
+                doc.setFont(undefined, options.fontWeight || 'normal');
+                doc.text(text, x, y, options);
+              } catch (fallbackError) {
+                console.error("Fallback font also failed:", fallbackError);
+                // Last resort - just try to add text without setting font
+                doc.text(text, x, y, options);
+              }
+            }
+          }
+
+          // Add company header with logo placeholder
+          doc.setFillColor(0, 123, 255);
+          doc.rect(0, 0, 210, 40, 'F');
+          
+          doc.setTextColor(255, 255, 255);
+          doc.setFontSize(24);
+          safeText("Digital Parking System", 105, 25, { align: "center", fontWeight: "bold" });
+          
+          doc.setFontSize(12);
+          safeText("Official Payment Receipt", 105, 35, { align: "center" });
+
+          // Add receipt details section with background
+          doc.setFillColor(248, 249, 250);
+          doc.rect(10, 50, 190, 25, 'F');
+          
+          doc.setTextColor(0, 0, 0);
+          doc.setFontSize(12);
+          safeText("Receipt #: " + receiptData.receiptNumber, 15, 60, { fontWeight: "bold" });
+          safeText("Ticket #: " + receiptData.ticketNumber, 15, 70, { fontWeight: "bold" });
+          safeText("Date: " + receiptData.paymentDate, 120, 60, { fontWeight: "bold" });
+          safeText("Time: " + new Date().toLocaleTimeString(), 120, 70, { fontWeight: "bold" });
+
+          // Add vehicle information section
+          doc.setFontSize(14);
+          doc.setTextColor(0, 123, 255);
+          safeText("Vehicle Information", 15, 90, { fontWeight: "bold" });
+          
+          doc.setFontSize(10);
+          doc.setTextColor(0, 0, 0);
+          safeText("License Plate:", 15, 105, { fontWeight: "bold" });
+          safeText("Make/Model:", 15, 115, { fontWeight: "bold" });
+          safeText("Color:", 15, 125, { fontWeight: "bold" });
+          safeText("Driver:", 15, 135, { fontWeight: "bold" });
+          
+          safeText(receiptData.licensePlate, 50, 105);
+          safeText(receiptData.make + " " + receiptData.model, 50, 115);
+          safeText(receiptData.color, 50, 125);
+          safeText(receiptData.driverName, 50, 135);
+
+          // Add parking details section
+          doc.setFontSize(14);
+          doc.setTextColor(0, 123, 255);
+          safeText("Parking Details", 15, 155, { fontWeight: "bold" });
+          
+          doc.setFontSize(10);
+          doc.setTextColor(0, 0, 0);
+          safeText("Slot:", 15, 165, { fontWeight: "bold" });
+          safeText("Slot Name:", 15, 175, { fontWeight: "bold" });
+          safeText("Check-In:", 15, 185, { fontWeight: "bold" });
+          safeText("Check-Out:", 15, 195, { fontWeight: "bold" });
+          safeText("Duration:", 15, 205, { fontWeight: "bold" });
+          
+          safeText(receiptData.slotNumber, 50, 165);
+          safeText(receiptData.slotName, 50, 175);
+          safeText(receiptData.checkInTime, 50, 185);
+          safeText(receiptData.checkOutTime, 50, 195);
+          safeText(receiptData.durationHours + " hour(s)", 50, 205);
+
+          // Add payment details section
+          doc.setFontSize(14);
+          doc.setTextColor(0, 123, 255);
+          safeText("Payment Details", 15, 225, { fontWeight: "bold" });
+          
+          doc.setFontSize(10);
+          doc.setTextColor(0, 0, 0);
+          safeText("Payment Method:", 15, 235, { fontWeight: "bold" });
+          safeText("Reference:", 15, 245, { fontWeight: "bold" });
+          safeText("Cashier:", 15, 255, { fontWeight: "bold" });
+          
+          safeText(receiptData.paymentMethod.toUpperCase(), 50, 235);
+          safeText(receiptData.referenceNumber, 50, 245);
+          safeText(receiptData.cashierName, 50, 255);
+
+          // Add total amount with highlight
+          doc.setFillColor(40, 167, 69);
+          doc.rect(10, 265, 190, 20, 'F');
+          
+          doc.setTextColor(255, 255, 255);
+          doc.setFontSize(16);
+          safeText("TOTAL AMOUNT: $" + receiptData.amount, 105, 280, { align: "center", fontWeight: "bold" });
+
+          // Add footer
+          doc.setTextColor(100, 100, 100);
+          doc.setFontSize(8);
+          safeText("This receipt serves as proof of payment. Please keep it for your records.", 105, 300, { align: "center" });
+          safeText("Generated on: " + new Date().toLocaleString(), 105, 310, { align: "center" });
+          safeText("Digital Parking Management System - All rights reserved", 105, 320, { align: "center" });
+
+          // Save the PDF with proper filename
+          const fileName = "Parking_Receipt_" + receiptData.receiptNumber + "_" + new Date().toISOString().slice(0, 10) + ".pdf";
+          doc.save(fileName);
+
+          console.log("PDF generated successfully: " + fileName);
+          
+          // Show success message
+          showSuccessMessage("PDF receipt downloaded successfully!");
+          
+          // Log the successful generation
+          logReceiptGeneration(receiptData.receiptNumber, 'PDF');
+
+        } catch (error) {
+          console.error("PDF generation error:", error);
+          showErrorMessage("PDF generation failed. Creating text receipt instead.");
+          // Fallback to text receipt
+          createTextReceipt(receiptData);
+        }
+      }
+
+      // Fallback function to create a text-based receipt
+      function createTextReceipt(receiptData) {
+        try {
+          const receiptText = `DIGITAL PARKING MANAGEMENT SYSTEM
+===============================
+
+Receipt #: ${receiptData.receiptNumber}
+Date: ${receiptData.paymentDate}
+Ticket #: ${receiptData.ticketNumber}
+
+VEHICLE INFORMATION:
+License Plate: ${receiptData.licensePlate}
+Make/Model: ${receiptData.make} ${receiptData.model}
+Color: ${receiptData.color}
+Driver: ${receiptData.driverName}
+
+PARKING DETAILS:
+Slot: ${receiptData.slotNumber}
+Slot Name: ${receiptData.slotName}
+Check-In: ${receiptData.checkInTime}
+Check-Out: ${receiptData.checkOutTime}
+Duration: ${receiptData.durationHours} hour(s)
+
+PAYMENT DETAILS:
+Payment Method: ${receiptData.paymentMethod}
+Reference: ${receiptData.referenceNumber}
+Cashier: ${receiptData.cashierName}
+Total Amount: $${receiptData.amount}
+
+Notes: ${receiptData.notes}
+
+Generated on: ${new Date().toLocaleString()}`;
+
+          // Create and download text file
+          const blob = new Blob([receiptText], { type: "text/plain" });
+          const url = window.URL.createObjectURL(blob);
+          const a = document.createElement("a");
+          a.href = url;
+          a.download = `Receipt_${receiptData.receiptNumber}_${new Date().toISOString().slice(0, 10)}.txt`;
+          document.body.appendChild(a);
+          a.click();
+          document.body.removeChild(a);
+          window.URL.revokeObjectURL(url);
+
+          console.log("Text receipt created successfully");
+          alert("PDF generation failed, but text receipt was created successfully!");
+        } catch (error) {
+          console.error("Text receipt creation failed:", error);
+          alert("Receipt generation failed. Please try again or contact support.");
+        }
+      }
+
+      // Helper functions for better user experience
+      function showSuccessMessage(message) {
+        // Create a success notification
+        const notification = document.createElement('div');
+        notification.className = 'alert alert-success alert-dismissible fade show position-fixed';
+        notification.style.cssText = 'top: 20px; right: 20px; z-index: 9999; min-width: 300px;';
+        notification.innerHTML = `
+          <i class="bi bi-check-circle me-2"></i>${message}
+          <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        `;
+        document.body.appendChild(notification);
+        
+        // Auto-remove after 5 seconds
+        setTimeout(() => {
+          if (notification.parentNode) {
+            notification.remove();
+          }
+        }, 5000);
+      }
+
+      function showErrorMessage(message) {
+        // Create an error notification
+        const notification = document.createElement('div');
+        notification.className = 'alert alert-danger alert-dismissible fade show position-fixed';
+        notification.style.cssText = 'top: 20px; right: 20px; z-index: 9999; min-width: 300px;';
+        notification.innerHTML = `
+          <i class="bi bi-exclamation-triangle me-2"></i>${message}
+          <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        `;
+        document.body.appendChild(notification);
+        
+        // Auto-remove after 5 seconds
+        setTimeout(() => {
+          if (notification.parentNode) {
+            notification.remove();
+          }
+        }, 5000);
+      }
+
+      function logReceiptGeneration(receiptNumber, type) {
+        // Log receipt generation for analytics
+        console.log(`Receipt ${type} generated for: ${receiptNumber}`);
+        
+        // You can add analytics tracking here
+        if (typeof gtag !== 'undefined') {
+          gtag('event', 'receipt_generated', {
+            'receipt_number': receiptNumber,
+            'type': type,
+            'timestamp': new Date().toISOString()
+          });
+        }
+      }
+
+      // Print Receipt Functionality - Fixed to work properly
+      function printReceipt() {
+        console.log("Print Receipt function called");
+        
+        // Create a new window for printing
+        const printWindow = window.open('', '_blank', 'width=800,height=600');
+        
+        // Create the receipt HTML content for printing
+        const receiptContent = `
+          <!DOCTYPE html>
+          <html>
+          <head>
+            <title>Payment Receipt - <%= receipt.receipt_number %></title>
+            <style>
+              body { 
+                font-family: Arial, sans-serif; 
+                margin: 20px; 
+                font-size: 12px;
+                background: white;
+              }
+              .header { 
+                text-align: center; 
+                border-bottom: 2px solid #333; 
+                padding-bottom: 10px; 
+                margin-bottom: 20px;
+              }
+              .receipt-title { 
+                font-size: 24px; 
+                font-weight: bold; 
+                color: #333; 
+                margin-bottom: 5px;
+              }
+              .company-name { 
+                font-size: 16px; 
+                color: #666; 
+                margin-bottom: 5px;
+              }
+              .section { 
+                margin-bottom: 20px;
+                padding: 10px;
+                border: 1px solid #ddd;
+                border-radius: 5px;
+              }
+              .section-title { 
+                font-size: 16px; 
+                font-weight: bold; 
+                color: #333; 
+                border-bottom: 1px solid #ccc; 
+                padding-bottom: 5px; 
+                margin-bottom: 10px;
+              }
+              .info-row { 
+                display: flex; 
+                justify-content: space-between; 
+                margin-bottom: 8px;
+              }
+              .label { 
+                font-weight: bold; 
+                color: #333;
+              }
+              .value { 
+                color: #666;
+              }
+              .badge { 
+                background: #007bff; 
+                color: white; 
+                padding: 2px 8px; 
+                border-radius: 3px; 
+                font-size: 11px;
+              }
+              .badge-success { background: #28a745; }
+              .badge-info { background: #17a2b8; }
+              .badge-secondary { background: #6c757d; }
+              .amount { 
+                font-size: 18px; 
+                font-weight: bold; 
+                color: #28a745;
+              }
+              .footer { 
+                text-align: center; 
+                margin-top: 30px; 
+                padding-top: 20px; 
+                border-top: 1px solid #ccc; 
+                color: #666;
+                font-size: 10px;
+              }
+              @media print {
+                body { margin: 0; }
+                .no-print { display: none; }
+              }
+            </style>
+          </head>
+          <body>
+            <div class="header">
+              <div class="receipt-title">DIGITAL PARKING SYSTEM</div>
+              <div class="company-name">Payment Receipt</div>
+              <div style="color: #999; font-size: 12px;">Generated on ${new Date().toLocaleString()}</div>
+            </div>
+            
+            <div class="section">
+              <div class="section-title">RECEIPT INFORMATION</div>
+              <div class="info-row">
+                <span class="label">Receipt #:</span>
+                <span class="value"><%= receipt.receipt_number %></span>
+              </div>
+              <div class="info-row">
+                <span class="label">Date:</span>
+                <span class="value"><%= moment(receipt.payment_date).format('MMM DD, YYYY HH:mm') %></span>
+              </div>
+              <div class="info-row">
+                <span class="label">Status:</span>
+                <span class="badge badge-success">Payment Successful</span>
+              </div>
+            </div>
+            
+            <div class="section">
+              <div class="section-title">VEHICLE INFORMATION</div>
+              <div class="info-row">
+                <span class="label">License Plate:</span>
+                <span class="badge"><%= receipt.license_plate %></span>
+              </div>
+              <div class="info-row">
+                <span class="label">Make/Model:</span>
+                <span class="value"><%= receipt.make %> <%= receipt.model %></span>
+              </div>
+              <div class="info-row">
+                <span class="label">Color:</span>
+                <span class="value"><%= receipt.color %></span>
+              </div>
+              <div class="info-row">
+                <span class="label">Driver:</span>
+                <span class="value"><%= receipt.driver_name %></span>
+              </div>
+            </div>
+            
+            <div class="section">
+              <div class="section-title">PARKING DETAILS</div>
+              <div class="info-row">
+                <span class="label">Slot:</span>
+                <span class="badge badge-info"><%= receipt.slot_number %></span>
+              </div>
+              <div class="info-row">
+                <span class="label">Check-In:</span>
+                <span class="value"><%= moment(receipt.check_in_time).format('MMM DD, YYYY HH:mm') %></span>
+              </div>
+              <div class="info-row">
+                <span class="label">Check-Out:</span>
+                <span class="value"><%= moment(receipt.check_out_time).format('MMM DD, YYYY HH:mm') %></span>
+              </div>
+              <div class="info-row">
+                <span class="label">Duration:</span>
+                <span class="badge badge-secondary"><%= receipt.duration_hours %> hour(s)</span>
+              </div>
+            </div>
+            
+            <div class="section">
+              <div class="section-title">PAYMENT DETAILS</div>
+              <div class="info-row">
+                <span class="label">Payment Method:</span>
+                <span class="badge badge-success"><%= receipt.payment_method %></span>
+              </div>
+              <div class="info-row">
+                <span class="label">Cashier:</span>
+                <span class="value"><%= receipt.cashier_name %></span>
+              </div>
+              <div class="info-row">
+                <span class="label">Reference:</span>
+                <span class="value"><%= receipt.reference_number || 'N/A' %></span>
+              </div>
+              <div class="info-row">
+                <span class="label">Total Amount:</span>
+                <span class="amount">$<%= receipt.amount.toFixed(2) %></span>
+              </div>
+            </div>
+            
+            <% if (receipt.notes) { %>
+            <div class="section">
+              <div class="section-title">NOTES</div>
+              <div class="value"><%= receipt.notes %></div>
+            </div>
+            <% } %>
+            
+            <div class="footer">
+              <div style="margin-bottom: 10px;">
+                <strong>Thank you for using our parking service!</strong>
+              </div>
+              <div>
+                This receipt serves as proof of payment.<br>
+                Please keep it for your records.<br>
+                For any questions, please contact our support team.
+              </div>
+            </div>
+            
+            <div class="no-print" style="text-align: center; margin-top: 20px;">
+              <button onclick="window.print()" style="padding: 10px 20px; font-size: 16px; background: #007bff; color: white; border: none; border-radius: 5px; cursor: pointer;">
+                🖨️ Print Receipt
+              </button>
+              <button onclick="window.close()" style="padding: 10px 20px; font-size: 16px; background: #6c757d; color: white; border: none; border-radius: 5px; cursor: pointer; margin-left: 10px;">
+                ❌ Close
+              </button>
+            </div>
+          </body>
+          </html>
+        `;
+        
+        // Write the content to the new window
+        printWindow.document.write(receiptContent);
+        printWindow.document.close();
+        
+        // Wait for content to load, then focus the window
+        printWindow.onload = function() {
+          printWindow.focus();
+        };
+      }
+
+      // Fixed Ctrl+Shift+P shortcut to only print receipt content, not the whole page
+      document.addEventListener("keydown", function (e) {
+        if (e.ctrlKey && e.shiftKey && e.key === "P") {
+          e.preventDefault();
+          console.log("Ctrl+Shift+P pressed - calling printReceipt function");
+          printReceipt(); // Call printReceipt instead of generatePDFReceipt
+        }
+      });
+
+      // Initialize when page loads
+      document.addEventListener("DOMContentLoaded", function() {
+        console.log("Receipt page loaded, all functions available");
+        
+        // Test if jsPDF is loaded
+        if (typeof window.jspdf !== "undefined") {
+          console.log("jsPDF library is loaded and ready");
+        } else {
+          console.log("jsPDF library not loaded, will use text fallback");
+        }
+        
+        // Add click event listeners to ensure buttons work
+        const pdfButton = document.getElementById('downloadPdfBtn');
+        const printButton = document.getElementById('printReceiptBtn');
+        
+        if (pdfButton) {
+          pdfButton.addEventListener('click', function(e) {
+            e.preventDefault();
+            generatePDFReceipt();
+          });
+        }
+        
+        if (printButton) {
+          printButton.addEventListener('click', function(e) {
+            e.preventDefault();
+            printReceipt();
+          });
+        }
+      });
+    </script>
+  </body>
+</html>

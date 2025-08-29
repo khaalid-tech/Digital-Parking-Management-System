@@ -1,0 +1,433 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Parking Ticket - Digital Parking Management System</title>
+
+    <!-- Bootstrap 5 CSS -->
+    <link
+      href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css"
+      rel="stylesheet" />
+    <!-- Bootstrap Icons -->
+    <link
+      href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css"
+      rel="stylesheet" />
+    <!-- Custom CSS -->
+    <link href="/css/style.css" rel="stylesheet" />
+
+    <!-- Favicon -->
+    <link rel="icon" type="image/x-icon" href="/favicon.ico" />
+  </head>
+  <body>
+    <!-- Navigation -->
+    <nav class="navbar navbar-expand-lg navbar-dark bg-primary">
+      <div class="container-fluid">
+        <a class="navbar-brand" href="/">
+          <i class="bi bi-p-square-fill me-2"></i>
+          Digital Parking System
+        </a>
+
+        <button
+          class="navbar-toggler"
+          type="button"
+          data-bs-toggle="collapse"
+          data-bs-target="#navbarNav">
+          <span class="navbar-toggler-icon"></span>
+        </button>
+
+        <div class="collapse navbar-collapse" id="navbarNav">
+          <ul class="navbar-nav me-auto">
+            <li class="nav-item">
+              <a class="nav-link" href="/cashier/dashboard">
+                <i class="bi bi-speedometer2 me-1"></i>Dashboard
+              </a>
+            </li>
+            <li class="nav-item">
+              <a class="nav-link" href="/cashier/check-in">
+                <i class="bi bi-plus-circle me-1"></i>Check-In
+              </a>
+            </li>
+            <li class="nav-item">
+              <a class="nav-link" href="/cashier/check-out">
+                <i class="bi bi-dash-circle me-1"></i>Check-Out
+              </a>
+            </li>
+          </ul>
+
+          <ul class="navbar-nav">
+            <li class="nav-item dropdown">
+              <a
+                class="nav-link dropdown-toggle"
+                href="#"
+                role="button"
+                data-bs-toggle="dropdown">
+                <i class="bi bi-person-circle me-1"></i><%= user.full_name %>
+              </a>
+              <ul class="dropdown-menu dropdown-menu-end">
+                <li>
+                  <a class="dropdown-item" href="/auth/change-password">
+                    <i class="bi bi-key me-2"></i>Change Password
+                  </a>
+                </li>
+                <li><hr class="dropdown-divider" /></li>
+                <li>
+                  <a class="dropdown-item" href="/auth/logout">
+                    <i class="bi bi-box-arrow-right me-2"></i>Logout
+                  </a>
+                </li>
+              </ul>
+            </li>
+          </ul>
+        </div>
+      </div>
+    </nav>
+
+    <!-- Main Content -->
+    <main class="container py-4">
+      <!-- Success Message -->
+      <% if (typeof success !== 'undefined' && success) { %>
+      <div
+        class="alert alert-success alert-dismissible fade show mb-4"
+        role="alert">
+        <i class="bi bi-check-circle me-2"></i>
+        <%= success %>
+        <button
+          type="button"
+          class="btn-close"
+          data-bs-dismiss="alert"></button>
+      </div>
+      <% } %>
+
+      <!-- Page Header -->
+      <div class="page-header bg-light py-4 mb-4">
+        <div class="container">
+          <div class="row align-items-center">
+            <div class="col-md-8">
+              <h1 class="h2 mb-2 text-dark">Parking Ticket</h1>
+              <p class="text-secondary mb-0">
+                Ticket details for vehicle check-in
+              </p>
+            </div>
+            <div class="col-md-4 text-md-end">
+              <a href="/cashier/dashboard" class="btn btn-primary">
+                <i class="bi bi-arrow-left me-2"></i>Back to Dashboard
+              </a>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Ticket Details -->
+      <div class="row">
+        <div class="col-lg-8">
+          <div class="card border-0 shadow-sm">
+            <div class="card-header bg-primary text-white">
+              <h5 class="mb-0">
+                <i class="bi bi-receipt me-2"></i>Ticket Information
+              </h5>
+            </div>
+            <div class="card-body">
+              <div class="row">
+                <div class="col-md-6">
+                  <h6 class="text-dark">Ticket Number</h6>
+                  <p class="text-primary fw-bold">
+                    <%= ticket.ticket_number %>
+                  </p>
+
+                  <h6 class="text-dark">Check-In Time</h6>
+                  <p class="text-secondary">
+                    <%= moment(ticket.check_in_time).format('MMMM Do, YYYYHH:mm:ss') %>
+                  </p>
+
+                  <h6 class="text-dark">Parking Slot</h6>
+                  <p class="text-info">
+                    <%= ticket.slot_name || `Slot ${ticket.slot_number}` %>
+                  </p>
+
+                  <h6 class="text-dark">Hourly Rate</h6>
+                  <p class="text-success">$<%= ticket.hourly_rate %></p>
+                </div>
+
+                <div class="col-md-6">
+                  <h6 class="text-dark">Duration</h6>
+                  <p class="text-warning"><%= durationHours %> hours</p>
+
+                  <h6 class="text-dark">Estimated Cost</h6>
+                  <p class="text-danger fw-bold">$<%= estimatedCost %></p>
+
+                  <h6 class="text-dark">Status</h6>
+                  <span class="badge bg-warning text-white">Active</span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="col-lg-4">
+          <!-- Vehicle Information -->
+          <div class="card border-0 shadow-sm mb-4">
+            <div class="card-header bg-success text-white">
+              <h6 class="mb-0">
+                <i class="bi bi-car-front me-2"></i>Vehicle Details
+              </h6>
+            </div>
+            <div class="card-body">
+              <p>
+                <strong>License Plate:</strong>
+                <span class="badge bg-primary text-white"
+                  ><%= ticket.license_plate %></span
+                >
+              </p>
+              <p><strong>Make:</strong> <%= ticket.make || 'N/A' %></p>
+              <p><strong>Model:</strong> <%= ticket.model || 'N/A' %></p>
+              <p><strong>Color:</strong> <%= ticket.color || 'N/A' %></p>
+              <p><strong>Year:</strong> <%= ticket.year || 'N/A' %></p>
+            </div>
+          </div>
+
+          <!-- Driver Information -->
+          <div class="card border-0 shadow-sm">
+            <div class="card-header bg-info text-white">
+              <h6 class="mb-0">
+                <i class="bi bi-person me-2"></i>Driver Details
+              </h6>
+            </div>
+            <div class="card-body">
+              <p><strong>Name:</strong> <%= ticket.driver_name %></p>
+              <p><strong>Phone:</strong> <%= ticket.driver_phone || 'N/A' %></p>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Action Buttons -->
+      <div class="row mt-4">
+        <div class="col-12 text-center">
+          <a
+            href="/cashier/check-out/<%= ticket.id %>"
+            class="btn btn-warning btn-lg me-3">
+            <i class="bi bi-dash-circle me-2"></i>Check-Out Vehicle
+          </a>
+          <button onclick="printReceipt()" class="btn btn-primary btn-lg me-3">
+            <i class="bi bi-printer me-2"></i>Print Receipt
+          </button>
+          <a href="/cashier/check-in" class="btn btn-success btn-lg me-3">
+            <i class="bi bi-plus-circle me-2"></i>Check-In Another Vehicle
+          </a>
+          <a href="/cashier/dashboard" class="btn btn-secondary btn-lg">
+            <i class="bi bi-speedometer2 me-2"></i>Back to Dashboard
+          </a>
+        </div>
+      </div>
+    </main>
+
+    <!-- Footer -->
+    <footer class="bg-light text-center text-secondary py-3 mt-5">
+      <div class="container">
+        <small
+          >&copy; 2024 Digital Parking Management System. All rights
+          reserved.</small
+        >
+      </div>
+    </footer>
+
+    <!-- Bootstrap 5 JS Bundle -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+
+    <!-- Print Receipt Script -->
+    <script>
+      function printReceipt() {
+        // Create a new window for printing
+        const printWindow = window.open("", "_blank", "width=800,height=600");
+
+        // Create the receipt HTML content
+        const receiptContent = `
+          <!DOCTYPE html>
+          <html>
+          <head>
+            <title>Parking Receipt - ${ticket.ticket_number}</title>
+            <style>
+              body { 
+                font-family: Arial, sans-serif; 
+                margin: 20px; 
+                font-size: 12px;
+              }
+              .header { 
+                text-align: center; 
+                border-bottom: 2px solid #333; 
+                padding-bottom: 10px; 
+                margin-bottom: 20px;
+              }
+              .receipt-title { 
+                font-size: 24px; 
+                font-weight: bold; 
+                color: #333; 
+                margin-bottom: 5px;
+              }
+              .company-name { 
+                font-size: 16px; 
+                color: #666; 
+                margin-bottom: 5px;
+              }
+              .receipt-info { 
+                margin-bottom: 20px;
+              }
+              .info-row { 
+                display: flex; 
+                justify-content: space-between; 
+                margin-bottom: 8px;
+              }
+              .label { 
+                font-weight: bold; 
+                color: #333;
+              }
+              .value { 
+                color: #666;
+              }
+              .section { 
+                margin-bottom: 20px;
+              }
+              .section-title { 
+                font-size: 16px; 
+                font-weight: bold; 
+                color: #333; 
+                border-bottom: 1px solid #ccc; 
+                padding-bottom: 5px; 
+                margin-bottom: 10px;
+              }
+              .footer { 
+                text-align: center; 
+                margin-top: 30px; 
+                padding-top: 20px; 
+                border-top: 1px solid #ccc; 
+                color: #666;
+              }
+              @media print {
+                body { margin: 0; }
+                .no-print { display: none; }
+              }
+            </style>
+          </head>
+          <body>
+            <div class="header">
+              <div class="receipt-title">DIGITAL PARKING SYSTEM</div>
+              <div class="company-name">Parking Receipt</div>
+              <div style="color: #999; font-size: 12px;">Generated on ${new Date().toLocaleString()}</div>
+            </div>
+            
+            <div class="receipt-info">
+              <div class="info-row">
+                <span class="label">Receipt #:</span>
+                <span class="value">${ticket.ticket_number}</span>
+              </div>
+              <div class="info-row">
+                <span class="label">Date:</span>
+                <span class="value">${new Date(
+                  ticket.check_in_time
+                ).toLocaleDateString()}</span>
+              </div>
+              <div class="info-row">
+                <span class="label">Time:</span>
+                <span class="value">${new Date(
+                  ticket.check_in_time
+                ).toLocaleTimeString()}</span>
+              </div>
+              <div class="info-row">
+                <span class="label">Cashier:</span>
+                <span class="value">${user.full_name}</span>
+              </div>
+            </div>
+            
+            <div class="section">
+              <div class="section-title">VEHICLE INFORMATION</div>
+              <div class="info-row">
+                <span class="label">License Plate:</span>
+                <span class="value">${ticket.license_plate}</span>
+              </div>
+              <div class="info-row">
+                <span class="label">Make:</span>
+                <span class="value">${ticket.make || "N/A"}</span>
+              </div>
+              <div class="info-row">
+                <span class="label">Model:</span>
+                <span class="value">${ticket.model || "N/A"}</span>
+              </div>
+              <div class="info-row">
+                <span class="label">Color:</span>
+                <span class="value">${ticket.color || "N/A"}</span>
+              </div>
+              <div class="info-row">
+                <span class="label">Year:</span>
+                <span class="value">${ticket.year || "N/A"}</span>
+              </div>
+            </div>
+            
+            <div class="section">
+              <div class="section-title">DRIVER INFORMATION</div>
+              <div class="info-row">
+                <span class="label">Name:</span>
+                <span class="value">${ticket.driver_name}</span>
+              </div>
+              <div class="info-row">
+                <span class="label">Phone:</span>
+                <span class="value">${ticket.driver_phone || "N/A"}</span>
+              </div>
+            </div>
+            
+            <div class="section">
+              <div class="section-title">PARKING DETAILS</div>
+              <div class="info-row">
+                <span class="label">Parking Slot:</span>
+                <span class="value">${
+                  ticket.slot_name || `Slot ${ticket.slot_number}`
+                }</span>
+              </div>
+              <div class="info-row">
+                <span class="label">Hourly Rate:</span>
+                <span class="value">$${ticket.hourly_rate}</span>
+              </div>
+              <div class="info-row">
+                <span class="label">Duration:</span>
+                <span class="value">${durationHours} hours</span>
+              </div>
+              <div class="info-row">
+                <span class="label">Estimated Cost:</span>
+                <span class="value" style="font-weight: bold; color: #d32f2f;">$${estimatedCost}</span>
+              </div>
+            </div>
+            
+            <div class="footer">
+              <div style="margin-bottom: 10px;">
+                <strong>Thank you for using our parking service!</strong>
+              </div>
+              <div style="font-size: 10px;">
+                Keep this receipt for your records.<br>
+                For any questions, please contact our support team.
+              </div>
+            </div>
+            
+            <div class="no-print" style="text-align: center; margin-top: 20px;">
+              <button onclick="window.print()" style="padding: 10px 20px; font-size: 16px; background: #007bff; color: white; border: none; border-radius: 5px; cursor: pointer;">
+                🖨️ Print Receipt
+              </button>
+              <button onclick="window.close()" style="padding: 10px 20px; font-size: 16px; background: #6c757d; color: white; border: none; border-radius: 5px; cursor: pointer; margin-left: 10px;">
+                ❌ Close
+              </button>
+            </div>
+          </body>
+          </html>
+        `;
+
+        // Write the content to the new window
+        printWindow.document.write(receiptContent);
+        printWindow.document.close();
+
+        // Wait for content to load, then focus the window
+        printWindow.onload = function () {
+          printWindow.focus();
+        };
+      }
+    </script>
+  </body>
+</html>
